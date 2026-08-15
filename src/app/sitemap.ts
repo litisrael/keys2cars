@@ -1,14 +1,14 @@
 import { MetadataRoute } from 'next';
 import { locales } from '@/lib/i18n';
 import { servicesData } from '@/data/services';
-import { getPopularBrands } from '@/data/vehicles';
+import { getAllBrands } from '@/data/vehicles';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://keys2cars.com';
   const routes: MetadataRoute.Sitemap = [];
-  const popularBrands = getPopularBrands();
+  const allBrands = getAllBrands();
 
-  // 1. Homepages
+  // 1. Homepages multi-idioma con hreflang internacional
   for (const lang of locales) {
     routes.push({
       url: `${baseUrl}/${lang}`,
@@ -20,12 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
           'he-IL': `${baseUrl}/he`,
           'en-IL': `${baseUrl}/en`,
           'es-IL': `${baseUrl}/es`,
+          'x-default': `${baseUrl}/he`,
         },
       },
     });
   }
 
-  // 2. Services
+  // 2. Páginas principales de Servicios
   for (const service of servicesData) {
     for (const lang of locales) {
       routes.push({
@@ -38,26 +39,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
             'he-IL': `${baseUrl}/he/${service.slug}`,
             'en-IL': `${baseUrl}/en/${service.slug}`,
             'es-IL': `${baseUrl}/es/${service.slug}`,
+            'x-default': `${baseUrl}/he/${service.slug}`,
           },
         },
       });
     }
   }
 
-  // 3. Service + Brand Programmatic Pages
+  // 3. Páginas de SEO Programático: Servicio + Marca (ej: /he/car-key-duplication/toyota)
   for (const service of servicesData) {
-    for (const brand of popularBrands) {
+    for (const brand of allBrands) {
       for (const lang of locales) {
         routes.push({
           url: `${baseUrl}/${lang}/${service.slug}/${brand.slug}`,
           lastModified: new Date(),
           changeFrequency: 'weekly',
-          priority: 0.8,
+          priority: brand.popular ? 0.85 : 0.75,
           alternates: {
             languages: {
               'he-IL': `${baseUrl}/he/${service.slug}/${brand.slug}`,
               'en-IL': `${baseUrl}/en/${service.slug}/${brand.slug}`,
               'es-IL': `${baseUrl}/es/${service.slug}/${brand.slug}`,
+              'x-default': `${baseUrl}/he/${service.slug}/${brand.slug}`,
             },
           },
         });
@@ -65,19 +68,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
 
-  // 4. Brand Hubs
-  for (const brand of popularBrands) {
+  // 4. Hubs de Marca (ej: /he/brand/toyota)
+  for (const brand of allBrands) {
     for (const lang of locales) {
       routes.push({
         url: `${baseUrl}/${lang}/brand/${brand.slug}`,
         lastModified: new Date(),
         changeFrequency: 'monthly',
-        priority: 0.7,
+        priority: brand.popular ? 0.8 : 0.7,
         alternates: {
           languages: {
             'he-IL': `${baseUrl}/he/brand/${brand.slug}`,
             'en-IL': `${baseUrl}/en/brand/${brand.slug}`,
             'es-IL': `${baseUrl}/es/brand/${brand.slug}`,
+            'x-default': `${baseUrl}/he/brand/${brand.slug}`,
           },
         },
       });

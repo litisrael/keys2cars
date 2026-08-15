@@ -92,12 +92,12 @@ export default function Footer({ lang }: Props) {
                 {lang === 'he' ? 'זקוק למנעולן רכב עכשיו?' : 'Need an emergency auto locksmith now?'}
               </p>
               <a
-                href="tel:+972500000000"
+                href="tel:+972533393170"
                 dir="ltr"
                 className="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-extrabold text-lg transition-colors"
               >
                 <Phone className="w-5 h-5" />
-                <span>050-0000000</span>
+                <span>053-339-3170</span>
               </a>
               <div className="pt-2 text-xs text-slate-500">
                 {lang === 'he' ? 'שירות מקצועי באחריות מלאה' : 'Licensed & Certified in Israel'}

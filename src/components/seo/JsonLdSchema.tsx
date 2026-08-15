@@ -27,7 +27,7 @@ export default function JsonLdSchema({ lang, brand, service, model, faqs, canoni
     '@type': ['LocalBusiness', 'AutomotiveBusiness', 'Locksmith'],
     name: businessName,
     image: 'https://keys2cars.com/images/logo.png',
-    telephone: '+972-50-0000000',
+    telephone: '+972-53-339-3170',
     url: canonicalUrl || 'https://keys2cars.com',
     priceRange: '₪₪',
     currenciesAccepted: 'ILS',

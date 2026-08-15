@@ -36,12 +36,12 @@ export default function Header({ lang }: Props) {
             </span>
           </div>
           <a
-            href="tel:+972500000000"
+            href="tel:+972533393170"
             className="flex items-center gap-1.5 text-yellow-400 font-bold hover:text-yellow-300 transition-colors"
             dir="ltr"
           >
             <PhoneCall className="w-3.5 h-3.5" />
-            <span>050-0000000</span>
+            <span>053-339-3170</span>
           </a>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function Header({ lang }: Props) {
 
             {/* CTA Llamar */}
             <a
-              href="tel:+972500000000"
+              href="tel:+972533393170"
               className="hidden sm:inline-flex items-center gap-2 py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all hover:scale-105"
             >
               <PhoneCall className="w-3.5 h-3.5" />

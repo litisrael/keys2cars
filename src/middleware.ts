@@ -2,14 +2,19 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
-import { locales, defaultLocale, Locale } from './lib/i18n';
+
+export const locales = ['he', 'en', 'es'] as const;
+export type Locale = (typeof locales)[number];
+export const defaultLocale: Locale = 'he'; // Hebreo es el idioma principal por defecto
 
 function getLocale(request: NextRequest): string {
+  // 1. Verificar si el usuario ya tiene guardada una preferencia de idioma en cookies
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
   if (cookieLocale && (locales as readonly string[]).includes(cookieLocale)) {
     return cookieLocale;
   }
 
+  // 2. Negociar con las cabeceras Accept-Language del navegador
   const negotiatorHeaders: Record<string, string> = {};
   request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
@@ -24,7 +29,7 @@ function getLocale(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Ignorar assets estáticos, api, favicon, robots y sitemaps
+  // Ignorar archivos internos de Next.js, API, imágenes y archivos estáticos
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -36,13 +41,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Comprobar si falta el locale en la URL
+  // Verificar si la URL ya tiene el prefijo de idioma (/he, /en, /es)
   const pathnameIsMissingLocale = locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
+  // Si no tiene idioma (ejemplo: acceso a / o /contacto), redirigir por defecto a /he o idioma negociado
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
+    
+    // Preservar siempre los parámetros de búsqueda (UTM de Google Ads, gclid, etc.)
     const redirectUrl = new URL(`/${locale}${pathname === '/' ? '' : pathname}`, request.url);
     redirectUrl.search = request.nextUrl.search;
 
@@ -51,7 +59,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Guardar locale en la cookie
+  // Si ya tiene idioma, persistir el idioma en la cookie para futuras visitas
   const currentLocale = pathname.split('/')[1] as Locale;
   const response = NextResponse.next();
   if (locales.includes(currentLocale)) {
