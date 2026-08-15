@@ -88,5 +88,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
 
+  // 5. Páginas específicas de Modelo con slugs limpios (ej: /he/brand/kia/picanto)
+  for (const brand of allBrands.filter((b) => b.popular)) {
+    for (const model of brand.models.slice(0, 10)) {
+      for (const lang of locales) {
+        routes.push({
+          url: `${baseUrl}/${lang}/brand/${brand.slug}/${model.slug}`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.7,
+          alternates: {
+            languages: {
+              'he-IL': `${baseUrl}/he/brand/${brand.slug}/${model.slug}`,
+              'en-IL': `${baseUrl}/en/brand/${brand.slug}/${model.slug}`,
+              'es-IL': `${baseUrl}/es/brand/${brand.slug}/${model.slug}`,
+              'x-default': `${baseUrl}/he/brand/${brand.slug}/${model.slug}`,
+            },
+          },
+        });
+      }
+    }
+  }
+
   return routes;
 }

@@ -87,17 +87,123 @@ const brandTranslations = {
   'BYD': { en: 'BYD', slug: 'byd' }
 };
 
+const commonModelTranslations = {
+  'קורולה': 'corolla',
+  'יאריס': 'yaris',
+  'יאריס קרוס': 'yaris-cross',
+  'ראב 4': 'rav4',
+  'ראב4': 'rav4',
+  'קאמרי': 'camry',
+  'אייגו': 'aygo',
+  'אייגו X': 'aygo-x',
+  'היילקס': 'hilux',
+  'לנד קרוזר': 'land-cruiser',
+  'CHR': 'c-hr',
+  'פיקנטו': 'picanto',
+  'ספורטאז\'': 'sportage',
+  'ספורטז\'': 'sportage',
+  'נירו': 'niro',
+  'נירו פלוס': 'niro-plus',
+  'סיד': 'ceed',
+  'פרוסיד': 'proceed',
+  'אקסיד': 'xceed',
+  'ריו': 'rio',
+  'סטוניק': 'stonic',
+  'סורנטו': 'sorento',
+  'קרניבל': 'carnival',
+  'EV6': 'ev6',
+  'EV9': 'ev9',
+  'איוניק': 'ioniq',
+  'איוניק 5': 'ioniq-5',
+  'איוניק 6': 'ioniq-6',
+  'טוסון': 'tucson',
+  'קונה': 'kona',
+  'אלנטרה': 'elantra',
+  'סנטה פה': 'santa-fe',
+  'i10': 'i10',
+  'i20': 'i20',
+  'i30': 'i30',
+  'i35': 'i35',
+  'באיון': 'bayon',
+  'וניו': 'venue',
+  'גולף': 'golf',
+  'פולו': 'polo',
+  'פאסאט': 'passat',
+  'טיגואן': 'tiguan',
+  'טי קרוס': 't-cross',
+  'טי רוק': 't-roc',
+  'טוארג': 'touareg',
+  'קאדי': 'caddy',
+  'אוקטביה': 'octavia',
+  'סופרב': 'superb',
+  'פאביה': 'fabia',
+  'קודיאק': 'kodiaq',
+  'קארוק': 'karoq',
+  'קאמיק': 'kamiq',
+  'סקאלה': 'scala',
+  'אניאק': 'enyaq',
+  'מאזדה 2': 'mazda-2',
+  'מאזדה 3': 'mazda-3',
+  'מאזדה 6': 'mazda-6',
+  'CX-3': 'cx-3',
+  'CX-30': 'cx-30',
+  'CX-5': 'cx-5',
+  'CX-60': 'cx-60',
+  'קשקאי': 'qashqai',
+  'ג\'וק': 'juke',
+  'מיקרה': 'micra',
+  'אקסטרייל': 'x-trail',
+  'אאוטלנדר': 'outlander',
+  'איביזה': 'ibiza',
+  'ארונה': 'arona',
+  'לאון': 'leon',
+  'אטקה': 'ateca',
+  'פורמנטור': 'formentor',
+  'אטו 3': 'atto-3',
+  'דולפין': 'dolphin',
+  'סיל': 'seal',
+  'מודל 3': 'model-3',
+  'מודל Y': 'model-y',
+  'מודל S': 'model-s',
+  'מודל X': 'model-x',
+};
+
+let imageModelMap = {};
+try {
+  const content = fs.readFileSync('c:/Users/isroe/dev/newkeycar/src/assets/data/allModelsWithImagesUpdated.js', 'utf8');
+  const jsonStr = content.replace(/export const allModelsWithImagesUpdated = /, '').replace(/;\s*$/, '');
+  const list = JSON.parse(jsonStr);
+
+  list.forEach(item => {
+    if (item.main_image_updated) {
+      const filename = item.main_image_updated.split('/').pop().replace(/\.jpg|\.png|\.webp|\.avif/i, '');
+      const parts = filename.split('-');
+      const model = parts.slice(1, parts.length - 1).join('-') || parts[1];
+      const key = `${item.manufacturer_name}__${item.model_name}`;
+      if (!imageModelMap[key] && model) {
+        imageModelMap[key] = {
+          en: model.charAt(0).toUpperCase() + model.slice(1),
+          slug: model.toLowerCase(),
+          image: item.main_image_updated,
+        };
+      }
+    }
+  });
+} catch (e) {
+  console.warn('Could not read imageModelMap:', e.message);
+}
+
 const rawContent = fs.readFileSync('c:/Users/isroe/dev/newkeycar/src/data/vehicleData.js', 'utf8');
 const jsonPart = rawContent.replace(/export const vehicleData = /, '').replace(/;\s*$/, '');
 const rawData = JSON.parse(jsonPart);
 
-function slugify(text) {
+function slugifyLatin(text) {
   return text
     .toString()
     .toLowerCase()
     .trim()
     .replace(/[\s\/\\]+/g, '-')
-    .replace(/[^\w\u0590-\u05FF\-]+/g, '')
+    .replace(/[^\w\-]+/g, '')
     .replace(/\-\-+/g, '-')
     .replace(/^-+/, '')
     .replace(/-+$/, '');
@@ -105,32 +211,70 @@ function slugify(text) {
 
 const brandsList = [];
 
-for (const [heName, models] of Object.entries(rawData)) {
-  const meta = brandTranslations[heName] || { en: heName, slug: slugify(heName) };
-  const modelObjects = (models || []).map((m) => ({
-    nameHe: m,
-    nameEn: m,
-    slug: slugify(m) || 'model',
-  }));
+for (const [heBrandName, models] of Object.entries(rawData)) {
+  const brandMeta = brandTranslations[heBrandName] || { en: heBrandName, slug: slugifyLatin(heBrandName) || 'brand' };
+  
+  const modelObjects = [];
+  const seenSlugs = new Set();
+
+  for (const m of (models || [])) {
+    const key = `${heBrandName}__${m}`;
+    const autoMap = imageModelMap[key];
+    const dictSlug = commonModelTranslations[m];
+
+    let enName = autoMap?.en || '';
+    let slug = dictSlug || autoMap?.slug || '';
+
+    if (!slug) {
+      const latinOnly = slugifyLatin(m);
+      if (latinOnly) {
+        slug = latinOnly;
+        enName = enName || m;
+      } else {
+        slug = slugifyLatin(brandMeta.en) + '-' + (modelObjects.length + 1);
+        enName = enName || m;
+      }
+    }
+
+    if (!enName) {
+      enName = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    let finalSlug = slug;
+    let counter = 2;
+    while (seenSlugs.has(finalSlug)) {
+      finalSlug = `${slug}-${counter}`;
+      counter++;
+    }
+    seenSlugs.add(finalSlug);
+
+    modelObjects.push({
+      nameHe: m,
+      nameEn: enName,
+      slug: finalSlug,
+      image: autoMap?.image || `/newKey/${brandMeta.slug}-${finalSlug}-new.jpg`,
+    });
+  }
 
   brandsList.push({
-    slug: meta.slug,
+    slug: brandMeta.slug,
     names: {
-      he: heName,
-      en: meta.en,
-      es: meta.en,
+      he: heBrandName,
+      en: brandMeta.en,
+      es: brandMeta.en,
     },
-    popular: ['toyota', 'hyundai', 'kia', 'mazda', 'skoda', 'chevrolet', 'mitsubishi', 'nissan', 'renault', 'byd', 'volkswagen', 'seat', 'suzuki', 'mercedes', 'bmw', 'tesla'].includes(meta.slug),
+    popular: ['toyota', 'hyundai', 'kia', 'mazda', 'skoda', 'chevrolet', 'mitsubishi', 'nissan', 'renault', 'byd', 'volkswagen', 'seat', 'suzuki', 'mercedes', 'bmw', 'tesla'].includes(brandMeta.slug),
     models: modelObjects,
   });
 }
 
-const outputCode = `import { Locale } from '@/lib/i18n';
+const headerPart = `import { Locale } from '@/lib/i18n';
 
 export interface VehicleModel {
   nameHe: string;
   nameEn: string;
   slug: string;
+  image?: string;
 }
 
 export interface VehicleBrand {
@@ -140,7 +284,9 @@ export interface VehicleBrand {
   models: VehicleModel[];
 }
 
-export const vehicleBrands: VehicleBrand[] = ` + JSON.stringify(brandsList, null, 2) + `;
+export const vehicleBrands: VehicleBrand[] = `;
+
+const footerPart = `;
 
 export function getAllBrands(): VehicleBrand[] {
   return vehicleBrands;
@@ -150,16 +296,50 @@ export function getPopularBrands(): VehicleBrand[] {
   return vehicleBrands.filter((b) => b.popular);
 }
 
+function normalizeStr(str: string): string {
+  try {
+    return decodeURIComponent(str).toLowerCase().trim().replace(/[\\s_\\-]+/g, '');
+  } catch {
+    return str.toLowerCase().trim().replace(/[\\s_\\-]+/g, '');
+  }
+}
+
 export function getBrandBySlug(slug: string): VehicleBrand | undefined {
-  return vehicleBrands.find((b) => b.slug.toLowerCase() === slug.toLowerCase());
+  if (!slug) return undefined;
+  const decoded = normalizeStr(slug);
+  return vehicleBrands.find((b) => {
+    return (
+      normalizeStr(b.slug) === decoded ||
+      normalizeStr(b.names.en) === decoded ||
+      normalizeStr(b.names.he) === decoded
+    );
+  });
 }
 
 export function getModelBySlug(brandSlug: string, modelSlug: string): VehicleModel | undefined {
+  if (!brandSlug || !modelSlug) return undefined;
   const brand = getBrandBySlug(brandSlug);
   if (!brand) return undefined;
-  return brand.models.find((m) => m.slug.toLowerCase() === modelSlug.toLowerCase());
+
+  let decodedRaw = modelSlug;
+  try {
+    decodedRaw = decodeURIComponent(modelSlug).trim();
+  } catch {}
+
+  const normalizedTarget = normalizeStr(modelSlug);
+
+  return brand.models.find((m) => {
+    return (
+      m.slug.toLowerCase() === decodedRaw.toLowerCase() ||
+      m.nameHe.trim() === decodedRaw ||
+      m.nameEn.toLowerCase() === decodedRaw.toLowerCase() ||
+      normalizeStr(m.slug) === normalizedTarget ||
+      normalizeStr(m.nameHe) === normalizedTarget ||
+      normalizeStr(m.nameEn) === normalizedTarget
+    );
+  });
 }
 `;
 
-fs.writeFileSync('c:/Users/isroe/dev/keys2cars/src/data/vehicles.ts', outputCode, 'utf8');
-console.log('Successfully generated src/data/vehicles.ts with ' + brandsList.length + ' brands.');
+fs.writeFileSync('c:/Users/isroe/dev/keys2cars/src/data/vehicles.ts', headerPart + JSON.stringify(brandsList, null, 2) + footerPart, 'utf8');
+console.log('Regenerated vehicles.ts with clean formatting.');
