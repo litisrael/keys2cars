@@ -4,7 +4,7 @@ import { isValidIsraeliMobile, formatIsraeliPhone, formatToWhatsappNumber } from
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'isreollit@gmail.com';
+const DESTINATION_EMAIL = process.env.CONTACT_DESTINATION_EMAIL || 'isroellit@gmail.com';
 const FROM_EMAIL = process.env.CONTACT_FROM_EMAIL || 'Keys2Cars Leads <onboarding@resend.dev>';
 
 export async function POST(request: Request) {
