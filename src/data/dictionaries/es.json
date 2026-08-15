@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "services": "Servicios",
+    "brands": "Marcas y Modelos",
+    "emergency": "Emergencia 24/7",
+    "about": "Nosotros",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "badge": "Disponibilidad 24/7 en todo Israel",
+    "title": "Especialistas en Cerrajería Automotriz y Duplicado de Llaves en Israel",
+    "subtitle": "Apertura de autos sin daños, programación de llaves con chip y control remoto a domicilio. Llegada en 20-30 min.",
+    "ctaCall": "Llamar Ahora 24/7",
+    "ctaWhatsapp": "WhatsApp Directo"
+  },
+  "search": {
+    "title": "Selecciona la marca de tu vehículo",
+    "placeholder": "Buscar marca (Toyota, Hyundai, Kia...)",
+    "viewModels": "Modelos compatibles"
+  },
+  "services": {
+    "title": "Servicios Profesionales de Cerrajería Móvil",
+    "subtitle": "Equipos de diagnóstico y codificación original para todos los modelos",
+    "fromPrice": "Desde ",
+    "orderService": "Solicitar Servicio"
+  },
+  "form": {
+    "title": "Cotización Inmediata",
+    "subtitle": "Ingresa tus datos y un cerrajero te contactará en 2 minutos",
+    "name": "Nombre Completo",
+    "namePlaceholder": "Carlos Pérez",
+    "phone": "Teléfono Móvil (Israel)",
+    "phonePlaceholder": "050-1234567",
+    "brand": "Marca del Auto",
+    "model": "Modelo / Año",
+    "modelPlaceholder": "ej. Corolla 2021",
+    "service": "Servicio Requerido",
+    "city": "Ciudad / Zona en Israel",
+    "cityPlaceholder": "Tel Aviv, Netanya, Jerusalén...",
+    "submit": "Enviar Solicitud",
+    "submitting": "Enviando...",
+    "success": "¡Solicitud recibida! Un cerrajero se pondrá en contacto contigo de inmediato.",
+    "phoneError": "Ingresa un número de celular israelí válido (05X-XXXXXXX)"
+  },
+  "trust": {
+    "arrival": "Llegada rápida 20-30 min",
+    "warranty": "Garantía total en llaves y servicios",
+    "licensed": "Cerrajería automotriz certificada",
+    "equipment": "Equipos originales de última generación"
+  }
+}

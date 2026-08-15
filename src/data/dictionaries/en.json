@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "brands": "Cars & Brands",
+    "emergency": "24/7 Emergency",
+    "about": "About Us",
+    "contact": "Contact"
+  },
+  "hero": {
+    "badge": "24/7 Nationwide Availability in Israel",
+    "title": "Automotive Locksmith & Key Replacement Specialist in Israel",
+    "subtitle": "Non-destructive car lockout entry, smart key programming & immobilizer cloning on-site. Fast 20-30 min arrival.",
+    "ctaCall": "Call Now 24/7",
+    "ctaWhatsapp": "Quick WhatsApp"
+  },
+  "search": {
+    "title": "Select your car make",
+    "placeholder": "Search make (Toyota, Hyundai, Kia...)",
+    "viewModels": "Supported models"
+  },
+  "services": {
+    "title": "Professional Auto Locksmith Services",
+    "subtitle": "Original diagnostic & programming equipment for all vehicle years",
+    "fromPrice": "From ",
+    "orderService": "Request Service"
+  },
+  "form": {
+    "title": "Get an Instant Quote",
+    "subtitle": "Fill in your details and a locksmith will contact you within 2 minutes",
+    "name": "Full Name",
+    "namePlaceholder": "John Doe",
+    "phone": "Mobile Phone (Israel)",
+    "phonePlaceholder": "050-1234567",
+    "brand": "Car Make",
+    "model": "Model / Year",
+    "modelPlaceholder": "e.g. Corolla 2021",
+    "service": "Service Needed",
+    "city": "City / Location in Israel",
+    "cityPlaceholder": "Tel Aviv, Petah Tikva, Jerusalem...",
+    "submit": "Send Request Now",
+    "submitting": "Sending...",
+    "success": "Request received! A certified locksmith is contacting you shortly.",
+    "phoneError": "Please enter a valid Israeli phone number (05X-XXXXXXX)"
+  },
+  "trust": {
+    "arrival": "Fast 20-30 min arrival",
+    "warranty": "Full warranty on all keys & jobs",
+    "licensed": "Certified & licensed auto locksmith",
+    "equipment": "Latest OEM coding equipment"
+  }
+}
