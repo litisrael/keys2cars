@@ -2,13 +2,14 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Locale, locales } from '@/lib/i18n';
 import { getBrandBySlug, getModelBySlug, getPopularBrands } from '@/data/vehicles';
 import { servicesData } from '@/data/services';
 import DynamicHeroBanner from '@/components/ads/DynamicHeroBanner';
 import QuickLeadForm from '@/components/forms/QuickLeadForm';
 import JsonLdSchema from '@/components/seo/JsonLdSchema';
-import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Clock, Car } from 'lucide-react';
 
 export async function generateStaticParams() {
   const popularBrands = getPopularBrands();
@@ -17,7 +18,6 @@ export async function generateStaticParams() {
   for (const lang of locales) {
     for (const brand of popularBrands) {
       for (const model of brand.models.slice(0, 10)) {
-        // Generar ruta con slug limpio en inglés (ej: /he/brand/kia/picanto)
         params.push({
           lang,
           brand: brand.slug,
@@ -62,8 +62,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 
   const baseUrl = 'https://keys2cars.com';
-  // Canonical estandarizado con el slug limpio del modelo
   const canonicalModelSlug = model.slug;
+  const ogImageUrl = model.image ? `${baseUrl}${model.image}` : `${baseUrl}/og-image.jpg`;
 
   return {
     title: titles[locale],
@@ -82,6 +82,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: descriptions[locale],
       url: `${baseUrl}/${locale}/brand/${brand.slug}/${canonicalModelSlug}`,
       locale: locale === 'he' ? 'he_IL' : locale === 'es' ? 'es_IL' : 'en_US',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 800,
+          height: 600,
+          alt: `מפתח ושלט חכם לרכב ${brandName} ${modelName}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titles[locale],
+      description: descriptions[locale],
+      images: [ogImageUrl],
     },
   };
 }
@@ -117,6 +131,10 @@ export default async function ModelPage({ params }: PageProps) {
     },
   ];
 
+  const carImageAlt = locale === 'he'
+    ? `שכפול מפתח וקידוד שלט חכם לרכב ${brand.names.he} ${model.nameHe} בישראל`
+    : `Car key replacement and smart remote programming for ${brandName} ${modelName}`;
+
   return (
     <>
       <JsonLdSchema
@@ -133,16 +151,48 @@ export default async function ModelPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 items-start">
           <div className="lg:col-span-7">
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border border-slate-200/80 mb-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 text-brand-700 text-xs font-bold rounded-lg mb-3">
-                <span>{brandName}</span>
-                <span>•</span>
-                <span>{modelName}</span>
+              
+              {/* Encabezado con Logo y Badges */}
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 text-brand-700 text-xs font-bold rounded-lg">
+                  <span>{brandName}</span>
+                  <span>•</span>
+                  <span>{modelName}</span>
+                </div>
+                <div className="w-10 h-10 relative">
+                  <Image
+                    src={`/logo/${brand.slug}.png`}
+                    alt={`Logo ${brandName}`}
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
               </div>
+
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-4">
                 {locale === 'he'
                   ? `שירותי מנעולן רכב מוסמך עבור ${brandName} ${modelName}`
                   : `Certified Auto Locksmith for ${brandName} ${modelName}`}
               </h1>
+
+              {/* Imagen Optimizada del Modelo de Auto */}
+              {model.image && (
+                <div className="relative w-full h-56 sm:h-72 rounded-2xl overflow-hidden mb-6 bg-slate-100 border border-slate-200/80">
+                  <Image
+                    src={model.image}
+                    alt={carImageAlt}
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute bottom-3 start-3 px-3 py-1 bg-slate-950/80 backdrop-blur-md rounded-xl text-white text-xs font-semibold">
+                    {brandName} {modelName}
+                  </div>
+                </div>
+              )}
+
               <p className="text-slate-600 leading-relaxed mb-6">
                 {locale === 'he'
                   ? `אנו מעניקים שירות מלא לדגם ${brandName} ${modelName} עד מיקום הרכב בכל רחבי ישראל. קידוד מפתחות מקוריים, שכפול שלטי נוחות, שחזור מאובדן מלא ופתיחת דלתות נעולות ללא נזק תוך 20-30 דקות.`
@@ -182,7 +232,7 @@ export default async function ModelPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Otros modelos de la misma marca */}
+            {/* Modelos relacionados */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-lg border border-slate-200/80">
               <h3 className="text-base font-bold text-slate-900 mb-3">
                 {locale === 'he' ? `דגמים נוספים של ${brandName}` : `Other ${brandName} Models`}

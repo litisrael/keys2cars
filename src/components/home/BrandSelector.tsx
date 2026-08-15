@@ -2,10 +2,11 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Locale } from '@/lib/i18n';
 import { getDictionary } from '@/lib/dictionary';
 import { VehicleBrand } from '@/data/vehicles';
-import { Search, ChevronRight, Car, Sparkles } from 'lucide-react';
+import { Search, Car, Sparkles } from 'lucide-react';
 
 interface Props {
   lang: Locale;
@@ -16,6 +17,7 @@ export default function BrandSelector({ lang, brands }: Props) {
   const dict = getDictionary(lang);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'popular' | 'all'>('popular');
+  const [failedLogos, setFailedLogos] = useState<Record<string, boolean>>({});
 
   const filteredBrands = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
@@ -90,23 +92,42 @@ export default function BrandSelector({ lang, brands }: Props) {
 
       {/* Grid de Marcas */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-        {filteredBrands.map((brand) => (
-          <Link
-            key={brand.slug}
-            href={`/${lang}/car-key-duplication/${brand.slug}`}
-            className="group flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 hover:bg-brand-50/70 border border-slate-200/80 hover:border-brand-300 transition-all hover:shadow-md hover:-translate-y-0.5 text-center"
-          >
-            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 group-hover:text-brand-600 mb-2.5 transition-colors">
-              <Car className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-slate-900 text-sm group-hover:text-brand-700 transition-colors">
-              {brand.names[lang] || brand.names.he}
-            </span>
-            <span className="text-[11px] text-slate-400 mt-0.5">
-              {brand.models.length} {dict.search.viewModels}
-            </span>
-          </Link>
-        ))}
+        {filteredBrands.map((brand) => {
+          const hasLogo = !failedLogos[brand.slug];
+          const brandName = brand.names[lang] || brand.names.he;
+          const altText = lang === 'he'
+            ? `סמל יצרן רכב ${brand.names.he} - שירותי מנעולן Keys2Cars`
+            : `Car emblem for ${brandName} - Keys2Cars Locksmith`;
+
+          return (
+            <Link
+              key={brand.slug}
+              href={`/${lang}/car-key-duplication/${brand.slug}`}
+              className="group flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 hover:bg-brand-50/70 border border-slate-200/80 hover:border-brand-300 transition-all hover:shadow-md hover:-translate-y-0.5 text-center"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center p-2 mb-2.5 transition-transform group-hover:scale-105 border border-slate-100">
+                {hasLogo ? (
+                  <Image
+                    src={`/logo/${brand.slug}.png`}
+                    alt={altText}
+                    width={40}
+                    height={40}
+                    className="max-h-8 w-auto object-contain"
+                    onError={() => setFailedLogos((prev) => ({ ...prev, [brand.slug]: true }))}
+                  />
+                ) : (
+                  <Car className="w-6 h-6 text-slate-500 group-hover:text-brand-600" />
+                )}
+              </div>
+              <span className="font-bold text-slate-900 text-sm group-hover:text-brand-700 transition-colors">
+                {brandName}
+              </span>
+              <span className="text-[11px] text-slate-400 mt-0.5">
+                {brand.models.length} {dict.search.viewModels}
+              </span>
+            </Link>
+          );
+        })}
       </div>
 
       {filteredBrands.length === 0 && (

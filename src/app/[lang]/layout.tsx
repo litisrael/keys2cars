@@ -1,11 +1,21 @@
 import { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 import { locales, Locale, isRTL } from '@/lib/i18n';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import QuickContactFloating from '@/components/float/QuickContactFloating';
 import '../globals.css';
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0284c7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -28,11 +38,40 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 
   const descriptions: Record<Locale, string> = {
     he: 'שירותי מנעולנות רכב מקצועיים בפריסה ארצית: פריצה ללא נזק, שכפול מפתחות חכמים, שחזור מאובדן מוחלט וקידוד אימובילייזר במקום תוך 20-30 דקות.',
-    en: 'Professional automotive locksmith services across Israel: non-destructive car opening, smart key duplication, all keys lost recovery and ECU programming on-site in 20-30 min.',
+    en: 'Professional automotive locksmith services across Israel: non-destructive car opening, smart key duplication, all keys lost recovery, and ECU programming on-site in 20-30 min.',
     es: 'Servicios de cerrajería automotriz en todo Israel: apertura de autos sin daños, duplicado de llaves con chip, recuperación por pérdida total y programación en 20-30 min.',
   };
 
+  const keywordsMap: Record<Locale, string[]> = {
+    he: [
+      'מנעולן רכב',
+      'שכפול מפתחות לרכב',
+      'פריצת רכב ללא נזק',
+      'שחזור מפתחות רכב',
+      'קידוד שלטים לרכב',
+      'מנעולן רכב תל אביב',
+      'מנעולן רכב 24 שעות',
+      'שכפול מפתח חכם',
+    ],
+    en: [
+      'car locksmith israel',
+      'auto locksmith tel aviv',
+      'car key duplication israel',
+      'emergency car lockout israel',
+      'smart key programming',
+      'all keys lost replacement',
+    ],
+    es: [
+      'cerrajero de autos israel',
+      'duplicado de llaves de auto israel',
+      'apertura de autos de emergencia',
+      'llaves con chip automotriz',
+      'cerrajería móvil 24 horas',
+    ],
+  };
+
   const baseUrl = 'https://keys2cars.com';
+  const ogImageUrl = `${baseUrl}/og-image.jpg`;
 
   return {
     metadataBase: new URL(baseUrl),
@@ -41,6 +80,27 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       template: `%s | Keys2Cars Israel`,
     },
     description: descriptions[currentLang],
+    keywords: keywordsMap[currentLang],
+    authors: [{ name: 'Keys2Cars Israel', url: baseUrl }],
+    creator: 'Keys2Cars',
+    publisher: 'Keys2Cars Israel',
+    formatDetection: {
+      telephone: true,
+      email: true,
+      address: true,
+    },
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+        { url: '/favicon-192x192.png', type: 'image/png', sizes: '192x192' },
+      ],
+      apple: [
+        { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
+      shortcut: ['/favicon.ico'],
+    },
+    manifest: '/manifest.webmanifest',
     alternates: {
       canonical: `${baseUrl}/${currentLang}`,
       languages: {
@@ -53,8 +113,37 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     openGraph: {
       type: 'website',
       siteName: 'Keys2Cars Israel',
-      locale: currentLang === 'he' ? 'he_IL' : currentLang === 'es' ? 'es_IL' : 'en_US',
+      title: titles[currentLang],
+      description: descriptions[currentLang],
       url: `${baseUrl}/${currentLang}`,
+      locale: currentLang === 'he' ? 'he_IL' : currentLang === 'es' ? 'es_IL' : 'en_US',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: titles[currentLang],
+          type: 'image/jpeg',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titles[currentLang],
+      description: descriptions[currentLang],
+      images: [ogImageUrl],
+      creator: '@keys2cars',
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
   };
 }
