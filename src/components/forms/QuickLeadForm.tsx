@@ -7,7 +7,7 @@ import { getDictionary } from '@/lib/dictionary';
 import { isValidIsraeliMobile, formatIsraeliPhone } from '@/lib/israel-phone';
 import { servicesData } from '@/data/services';
 import { getAllBrands } from '@/data/vehicles';
-import { CheckCircle2, AlertCircle, Send, Phone, User, Car, Wrench, MapPin } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Send, Phone, User, Car, Wrench, MapPin, MessageSquare, Loader2 } from 'lucide-react';
 
 interface Props {
   lang: Locale;
@@ -25,7 +25,7 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
   const utmBrand = searchParams.get('brand') || searchParams.get('utm_term') || initialBrand || '';
   const utmService = searchParams.get('service') || initialService || 'car-key-duplication';
   const utmModel = searchParams.get('model') || initialModel || '';
-  const utmCity = searchParams.get('city') || '';
+  const utmCity = searchParams.get('city') || searchParams.get('utm_content') || '';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,11 +34,13 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
     model: utmModel,
     service: utmService,
     city: utmCity,
+    description: '',
   });
 
   const [touched, setTouched] = useState<{ phone?: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState(false);
 
   useEffect(() => {
@@ -68,6 +70,9 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
+    // Validación de teléfono israelí
     if (!isValidIsraeliMobile(formData.phone)) {
       setPhoneError(true);
       return;
@@ -77,46 +82,72 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
     setPhoneError(false);
 
     try {
-      await fetch('/api/lead', {
+      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+      const selectedServiceObj = servicesData.find((s) => s.slug === formData.service);
+      const serviceTitle = selectedServiceObj ? selectedServiceObj.titles[lang] : formData.service;
+
+      const selectedBrandObj = allBrands.find((b) => b.slug === formData.brand);
+      const brandName = selectedBrandObj ? selectedBrandObj.names[lang] || selectedBrandObj.names.he : formData.brand;
+
+      const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          brand: brandName,
+          model: formData.model.trim(),
+          service: serviceTitle,
+          city: formData.city.trim(),
+          description: formData.description.trim(),
           lang,
-          source: searchParams.get('utm_source') || 'organic',
+          source: searchParams.get('utm_source') || 'organic_web',
           campaign: searchParams.get('utm_campaign') || 'direct',
-          timestamp: new Date().toISOString(),
+          pageUrl: currentUrl,
         }),
-      }).catch(() => null);
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al procesar la solicitud');
+      }
 
       setIsSuccess(true);
-    } catch {
-      setIsSuccess(true);
+    } catch (err: any) {
+      setErrorMessage(
+        lang === 'he'
+          ? 'חלה שגיאה בשליחת הבקשה. אנא נסה שוב או התקשר אלינו ישירות.'
+          : err.message || 'Error sending request. Please try again or call us directly.'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Mensaje de éxito
   if (isSuccess) {
     return (
-      <div className="bg-white rounded-3xl p-8 shadow-xl border border-emerald-100 text-center">
+      <div className="bg-white rounded-3xl p-8 shadow-xl border border-emerald-100 text-center animate-fadeIn">
         <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-10 h-10" />
         </div>
         <h3 className="text-2xl font-bold text-slate-900 mb-2">
-          {lang === 'he' ? 'הפנייה התקבלה בהצלחה!' : 'Request Received Successfully!'}
+          {lang === 'he' ? 'ההודעה נשלחה בהצלחה!' : '¡Mensaje enviado con éxito!'}
         </h3>
-        <p className="text-slate-600 mb-6">
-          {dict.form.success}
+        <p className="text-slate-600 mb-6 text-sm sm:text-base leading-relaxed">
+          {lang === 'he'
+            ? 'פרטי הבקשה התקבלו ונשלחו למנעולן התורן. ניצור איתך קשר טלפוני תוך מספר דקות עם הצעת מחיר מדויקת.'
+            : 'Nos pondremos en contacto contigo a la brevedad con tu cotización y tiempo de llegada.'}
         </p>
         <button
           onClick={() => {
             setIsSuccess(false);
-            setFormData({ name: '', phone: '', brand: '', model: '', service: 'car-key-duplication', city: '' });
+            setFormData({ name: '', phone: '', brand: '', model: '', service: 'car-key-duplication', city: '', description: '' });
           }}
-          className="text-sm font-semibold text-brand-600 hover:text-brand-700 underline"
+          className="text-xs sm:text-sm font-bold text-brand-600 hover:text-brand-700 underline"
         >
-          {lang === 'he' ? 'שליחת פנייה נוספת' : 'Send another request'}
+          {lang === 'he' ? 'שליחת בקשה נוספת' : 'Enviar otra solicitud'}
         </button>
       </div>
     );
@@ -125,15 +156,22 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200/80">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 mb-1">{dict.form.title}</h2>
+        <h2 className="text-2xl font-extrabold text-slate-900 mb-1">{dict.form.title}</h2>
         <p className="text-slate-600 text-sm">{dict.form.subtitle}</p>
       </div>
+
+      {errorMessage && (
+        <div className="mb-4 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Nombre */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1">
-            {dict.form.name}
+            {dict.form.name} <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <User className="w-4 h-4 text-slate-400 absolute top-3.5 start-3.5" />
@@ -178,7 +216,7 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
           )}
         </div>
 
-        {/* Marca de auto */}
+        {/* Marca y Modelo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -191,7 +229,7 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                 className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors appearance-none"
               >
-                <option value="">{lang === 'he' ? '-- בחר יצרן --' : '-- Select Make --'}</option>
+                <option value="">{lang === 'he' ? '-- בחר יצרן --' : '-- Seleccionar Marca --'}</option>
                 {allBrands.map((b) => (
                   <option key={b.slug} value={b.slug}>
                     {b.names[lang] || b.names.he}
@@ -253,14 +291,40 @@ function QuickLeadFormContent({ lang, brand: initialBrand, service: initialServi
           </div>
         </div>
 
-        {/* Botón Submit */}
+        {/* Descripción del problema o consulta */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
+            {lang === 'he' ? 'פירוט התקלה / הודעה נוספת' : lang === 'es' ? 'Descripción del problema o consulta' : 'Problem description / notes'}
+          </label>
+          <div className="relative">
+            <MessageSquare className="w-4 h-4 text-slate-400 absolute top-3.5 start-3.5" />
+            <textarea
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder={
+                lang === 'he'
+                  ? 'ננעל המפתח בתוך הבגאז\', מפתח אחרון אבד, מפתח לא מסתובב...'
+                  : lang === 'es'
+                  ? 'Ej: Se quedaron las llaves dentro del baúl, perdí la única copia, no gira la llave...'
+                  : 'E.g., Keys locked inside trunk, all keys lost, ignition not turning...'
+              }
+              className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Botón de Envío */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full mt-2 py-3.5 px-6 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-base shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+          className="w-full mt-2 py-3.5 px-6 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
         >
           {isSubmitting ? (
-            <span>{dict.form.submitting}</span>
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>{lang === 'he' ? 'שולח...' : 'Enviando...'}</span>
+            </>
           ) : (
             <>
               <Send className="w-4 h-4" />
