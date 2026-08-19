@@ -4,7 +4,7 @@ import { servicesData } from '@/data/services';
 import { getAllBrands } from '@/data/vehicles';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://keys2cars.com';
+  const baseUrl = 'https://www.keys2cars.com';
   const routes: MetadataRoute.Sitemap = [];
   const allBrands = getAllBrands();
 

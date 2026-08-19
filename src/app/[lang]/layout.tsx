@@ -5,6 +5,8 @@ import { locales, Locale, isRTL } from '@/lib/i18n';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import QuickContactFloating from '@/components/float/QuickContactFloating';
+import GoogleAnalytics from '@/components/seo/GoogleAnalytics';
+import LocalBusinessSchema from '@/components/seo/LocalBusinessSchema';
 import '../globals.css';
 
 export const viewport: Viewport = {
@@ -31,42 +33,42 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const currentLang = (locales.includes(lang as Locale) ? lang : 'he') as Locale;
 
   const titles: Record<Locale, string> = {
-    he: 'Keys2Cars | מנעולן רכב ושכפול מפתחות בישראל 24/7',
-    en: 'Keys2Cars | 24/7 Car Locksmith & Key Replacement in Israel',
-    es: 'Keys2Cars | Cerrajería Automotriz y Duplicado de Llaves en Israel 24/7',
+    he: 'Keys2Cars | מנעולן רכב בבית שמש ושכפול מפתחות לרכב 24/7',
+    en: 'Keys2Cars | Automotive Locksmith in Bet Shemesh & Car Key Duplication',
+    es: 'Keys2Cars | Cerrajería Automotriz en Bet Shemesh y Duplicado de Llaves',
   };
 
   const descriptions: Record<Locale, string> = {
-    he: 'שירותי מנעולנות רכב מקצועיים בפריסה ארצית: פריצה ללא נזק, שכפול מפתחות חכמים, שחזור מאובדן מוחלט וקידוד אימובילייזר במקום תוך 20-30 דקות.',
-    en: 'Professional automotive locksmith services across Israel: non-destructive car opening, smart key duplication, all keys lost recovery, and ECU programming on-site in 20-30 min.',
-    es: 'Servicios de cerrajería automotriz en todo Israel: apertura de autos sin daños, duplicado de llaves con chip, recuperación por pérdida total y programación en 20-30 min.',
+    he: 'שירותי מנעולנות רכב מקצועיים בבית שמש: שכפול מפתחות לרכב, קידוד מפתח חכם ושלטים, ופריצת רכבים בחירום ללא נזק. הגעה מהירה ואחריות מלאה.',
+    en: 'Professional automotive locksmith in Bet Shemesh: Car key copying, smart key reprogramming, and emergency vehicle lockouts. Fast mobile response and OEM keys.',
+    es: 'Cerrajería automotriz en Bet Shemesh: duplicado de llaves de auto, reprogramación de llaves inteligentes y apertura de emergencia de vehículos sin daños.',
   };
 
   const keywordsMap: Record<Locale, string[]> = {
     he: [
-      'מנעולן רכב',
-      'שכפול מפתחות לרכב',
-      'פריצת רכב ללא נזק',
-      'שחזור מפתחות רכב',
-      'קידוד שלטים לרכב',
-      'מנעולן רכב תל אביב',
-      'מנעולן רכב 24 שעות',
-      'שכפול מפתח חכם',
+      'מנעולן רכב בית שמש',
+      'שכפול מפתחות לרכב בית שמש',
+      'פריצת רכב בית שמש',
+      'קידוד מפתח חכם לרכב',
+      'שחזור מפתחות רכב בית שמש',
+      'מנעולן רכב 24 שעות בית שמש',
+      'שכפול שלט לרכב בית שמש',
+      'מפתח לרכב',
     ],
     en: [
-      'car locksmith israel',
-      'auto locksmith tel aviv',
-      'car key duplication israel',
-      'emergency car lockout israel',
-      'smart key programming',
-      'all keys lost replacement',
+      'automotive locksmith bet shemesh',
+      'car locksmith bet shemesh',
+      'car key copying bet shemesh',
+      'smart key reprogramming',
+      'emergency vehicle lockout bet shemesh',
+      'car key replacement israel',
     ],
     es: [
-      'cerrajero de autos israel',
-      'duplicado de llaves de auto israel',
-      'apertura de autos de emergencia',
-      'llaves con chip automotriz',
-      'cerrajería móvil 24 horas',
+      'cerrajero de autos bet shemesh',
+      'duplicado de llaves de auto bet shemesh',
+      'reprogramacion llaves inteligentes',
+      'apertura de vehiculos de emergencia',
+      'cerrajeria automotriz israel',
     ],
   };
 
@@ -160,7 +162,11 @@ export default async function RootLayout({ children, params }: RootLayoutProps) 
 
   return (
     <html lang={locale} dir={rtl ? 'rtl' : 'ltr'}>
+      <head>
+        <LocalBusinessSchema lang={locale} canonicalUrl={`https://www.keys2cars.com/${locale}`} />
+      </head>
       <body className={`min-h-screen flex flex-col justify-between bg-slate-50 text-slate-900 ${rtl ? 'font-hebrew' : 'font-sans'}`}>
+        <GoogleAnalytics />
         <Header lang={locale} />
         <main className="flex-grow">{children}</main>
         <Footer lang={locale} />

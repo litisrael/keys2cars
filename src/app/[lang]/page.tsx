@@ -8,6 +8,8 @@ import DynamicHeroBanner from '@/components/ads/DynamicHeroBanner';
 import QuickLeadForm from '@/components/forms/QuickLeadForm';
 import BrandSelector from '@/components/home/BrandSelector';
 import JsonLdSchema from '@/components/seo/JsonLdSchema';
+import ReviewGrid from '@/components/reviews/ReviewGrid';
+import { getGooglePlaceReviews } from '@/app/actions/getReviews';
 import { ShieldCheck, Clock, Award, PhoneCall, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface Props {
@@ -19,6 +21,7 @@ export default async function HomePage({ params }: Props) {
   const locale = lang as Locale;
   const dict = getDictionary(locale);
   const brands = getAllBrands();
+  const reviewsData = await getGooglePlaceReviews(locale);
 
   const isRTL = locale === 'he';
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
@@ -134,6 +137,9 @@ export default async function HomePage({ params }: Props) {
             ))}
           </div>
         </section>
+
+        {/* Google Maps Customer Reviews Grid */}
+        <ReviewGrid lang={locale} reviewsData={reviewsData} />
 
         {/* FAQ Section */}
         <section className="bg-white rounded-3xl p-6 sm:p-10 shadow-lg border border-slate-200/80 mb-12">

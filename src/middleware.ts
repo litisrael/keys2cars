@@ -18,9 +18,17 @@ function getLocale(request: NextRequest): string {
   const negotiatorHeaders: Record<string, string> = {};
   request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
-  const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
   try {
-    return match(languages, locales as unknown as string[], defaultLocale);
+    const rawLanguages = new Negotiator({ headers: negotiatorHeaders }).languages();
+    
+    // Si el usuario tiene hebreo (he / iw) en cualquier prioridad o no tiene preferencias válidas, usar hebreo por defecto
+    const hasHebrew = rawLanguages.some((l) => l.toLowerCase().startsWith('he') || l.toLowerCase().startsWith('iw'));
+    if (hasHebrew || rawLanguages.length === 0 || rawLanguages[0] === '*') {
+      return 'he';
+    }
+
+    const matched = match(rawLanguages, locales as unknown as string[], defaultLocale);
+    return matched || defaultLocale;
   } catch {
     return defaultLocale;
   }
